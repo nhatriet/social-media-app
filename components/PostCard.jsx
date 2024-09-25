@@ -32,7 +32,8 @@ const PostCard = ({
     item,
     currentUser,
     router,
-    hasShadow = true
+    hasShadow = true,
+    showMoreIcon = true
 }) => {
     const shadowStyles = {
         shadowOffset: {
@@ -53,6 +54,7 @@ const PostCard = ({
     },[item])
 
     const openPostDetails = ()=>{
+        if(!showMoreIcon) return null;
         router.push({pathname: 'postDetails', params: {postId: item?.id}})
     }
 
@@ -94,6 +96,8 @@ const PostCard = ({
         Share.share(content);
     }
 
+    //console.log('post item comments: ', item?.comments);
+
     const createAt = moment(item?.created_at).format('MMM D');
     const liked = likes.filter(like=> like.userId==currentUser?.id)[0]? true: false;
   return (
@@ -112,11 +116,15 @@ const PostCard = ({
             </View>
         </View>
 
-        <TouchableOpacity onPress={openPostDetails}>
-            <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
-        </TouchableOpacity>
-      </View>
-
+        {
+            showMoreIcon && (
+                <TouchableOpacity onPress={openPostDetails}>
+                    <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
+                </TouchableOpacity>
+            )
+        }
+        
+        </View>
       {/* post body & media */}
       <View style={styles.content}>
         <View style={styles.postBody}>
@@ -175,7 +183,7 @@ const PostCard = ({
             </TouchableOpacity>
             <Text style={styles.count}>
                 {
-                    0
+                    item?.comments[0]?.count
                 }
             </Text>
         </View>
