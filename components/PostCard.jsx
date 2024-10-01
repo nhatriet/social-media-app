@@ -33,7 +33,10 @@ const PostCard = ({
     currentUser,
     router,
     hasShadow = true,
-    showMoreIcon = true
+    showMoreIcon = true,
+    showDelete = false,
+    onDelete=()=>{},
+    onEdit=()=>{}
 }) => {
     const shadowStyles = {
         shadowOffset: {
@@ -96,13 +99,27 @@ const PostCard = ({
         Share.share(content);
     }
 
-    //console.log('post item comments: ', item?.comments);
+    const handlePostDelete = ()=>{
+        Alert.alert('Confirm', "Are you sure you want to delete this post?", [
+            {
+              text: 'Cancel',
+              onPress: ()=> console.log('modal cancelled'),
+              style: 'cancel'
+            },
+            {
+              text: 'Delete',
+              onPress: ()=> onDelete(item),
+              style: 'destructive'
+            }
+        ])
+    }
 
     const createAt = moment(item?.created_at).format('MMM D');
     const liked = likes.filter(like=> like.userId==currentUser?.id)[0]? true: false;
   return (
     <View style={[styles.container, hasShadow && shadowStyles]}>
       <View style={styles.header}>
+
         {/* user info & post time */}
         <View style={styles.userInfo}>
             <Avatar
@@ -123,8 +140,22 @@ const PostCard = ({
                 </TouchableOpacity>
             )
         }
+
+        {
+            showDelete && currentUser.id == item?.userId && (
+                <View style={styles.actions}>
+                    <TouchableOpacity onPress={()=> onEdit(item)}>
+                        <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handlePostDelete}>
+                        <Icon name="delete" size={hp(2.5)} color={theme.colors.rose} />
+                    </TouchableOpacity>
+                </View>
+            )
+        }
         
         </View>
+
       {/* post body & media */}
       <View style={styles.content}>
         <View style={styles.postBody}>

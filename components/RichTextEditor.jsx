@@ -7,8 +7,8 @@ import { theme } from '../constants/theme'
 //   editorRef,
 //   onChange
 // }) => {
-  const RichTextEditor = ({ onChange }) => {
-    const editorRef = useRef();
+const RichTextEditor = ({ onChange }) => {
+  const editorRef = useRef();
   
   return (
     <View style={{minHeight: 285}}>

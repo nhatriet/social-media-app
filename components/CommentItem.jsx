@@ -10,7 +10,8 @@ import Icon from '../assets/icons'
 const CommentItem = ({
   item,
   canDelete = false,
-  onDelete = ()=>{}
+  onDelete = ()=>{},
+  highlight = false
 }) => {
   const createAt = moment(item?.created_at).format('MMM D');
 
@@ -30,8 +31,10 @@ const CommentItem = ({
   }
   return (
     <View style={styles.container}>
-      <Avatar uri={item?.user?.image} />
-      <View style={styles.content}>
+      <Avatar 
+        uri={item?.user?.image} 
+      />
+      <View style={[styles.content, highlight && styles.highlight]}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
           <View style={styles.nameContainer}>
             <Text style={styles.text}>

@@ -1,23 +1,23 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { createComment, fetchPostDetails, removeComment } from '../../services/postService';
+import { createComment, fetchPostDetails, removeComment, removePost } from '../../services/postService';
 import { theme } from '../../constants/theme';
 import { hp, wp } from '../../helpers/common';
 import { useAuth } from '../../contexts/AuthContext';
 import PostCard from '../../components/PostCard';
 import Loading from '../../components/Loading';
 import Input from '../../components/Input';
-import { TouchableOpacity } from 'react-native';
 import Icon from '../../assets/icons';
-import BackButton from '../../components/BackButton'
 import ScreenWrapper from '../../components/ScreenWrapper';
 import CommentItem from '../../components/CommentItem';
 import { supabase } from '../../lib/supabase';
 import { getUserData } from '../../services/userService';
+import { createNotification } from '../../services/notificationService';
+// import Header from '../../components/Header';
 
 const PostDetails = () => {
-    const {postId} = useLocalSearchParams();
+    const {postId, commentId} = useLocalSearchParams();
     const {user} = useAuth();
     const router = useRouter();
     const [startLoading, setStartLoading] = useState(true);
@@ -80,7 +80,17 @@ const PostDetails = () => {
         let res = await createComment(data);
         setLoading(false);
         if(res.success){
-            // send noti later
+            if(user.id != post.userId){
+                // send notification
+                let notify = {
+                    senderId: user.id,
+                    receiverId: post.userId,
+                    title: 'commented on your post',
+                    data: JSON.stringify({postId: post.id, commentId: res?.data?.id})
+                }
+                createNotification(notify);
+            }
+
             inputRef?.current?.clear();
             commentRef.current = "";
         }else{
@@ -102,6 +112,20 @@ const PostDetails = () => {
         }
     }
 
+    const onDeletePost = async (item)=>{
+        let res = await removePost(post.id); // (item.id) still okayy
+        if(res.success){
+            router.back();
+        }else{
+            Alert.alert('Post', res.msg);
+        }
+    }
+
+    const onEditPost = async (item)=>{
+        router.back();
+        router.push({pathname: 'newPost', params: {...item}})
+    }
+
     if(startLoading){
         return (
             <View style={styles.center}>
@@ -120,9 +144,8 @@ const PostDetails = () => {
     
   return (
     <ScreenWrapper bg="white">
-        <BackButton router={router} />
         <View style={styles.container}>
-            {/* <BackButton router={router} /> */}
+            {/* <Header /> */}
             <ScrollView showVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
                 <PostCard
                     item = {{...post, comments: [{count: post?.comments?.length}]}}
@@ -130,6 +153,9 @@ const PostDetails = () => {
                     router={router}
                     hasShadow={false}
                     showMoreIcon={false}
+                    showDelete={true}
+                    onDelete={onDeletePost}
+                    onEdit={onEditPost}
                 />
 
                 {/* comment input */}
@@ -163,6 +189,8 @@ const PostDetails = () => {
                                 key={comment?.id?.toString()}
                                 item={comment}
                                 onDelete={onDeleteComment}
+                                highlight = {comment.id == commentId}
+                                //canDelete = {user?.id && (user.id === comment.userId || user.id === post.userId)}
                                 canDelete = {user.id == comment.userId || user.id == post.userId}
                             />
                         )
