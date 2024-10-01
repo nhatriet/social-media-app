@@ -24,31 +24,34 @@ const NewPost = () => {
   const editorRef = useRef(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(file);
+  const [file, setFile] = useState(null);
 
-  useEffect(()=>{
-    if(post && post.id){
-      bodyRef.current = post.body;
-      setFile(post.file || null); // img or vid was got from getFileUri
-      setTimeout(() => {
-        editorRef?.current?.setContentHTML(post.body);
-      }, 500);
-    }
-  },[])
-
-  // useEffect(() => {
-  //   if (post && post.id) {
+  // useEffect(()=>{
+  //   if(post && post.id){
   //     bodyRef.current = post.body;
   //     setFile(post.file || null); // img or vid was got from getFileUri
-  
-  //     console.log('editorRef.current:', editorRef.current);
+  //     console.log('post.body:', post.body);
+  //     // setTimeout(() => {
+  //     //   editorRef?.current?.setContentHTML(post.body);
+  //     // }, 500);
   //     if (editorRef.current) {
   //       editorRef.current.setContentHTML(post.body);
-  //       // Optional: You can also try to focus the editor after setting the content HTML
-  //       editorRef.current.focus();
   //     }
   //   }
-  // }, [post, post.id, editorRef, bodyRef]);
+  // },[post])
+
+  useEffect(() => {
+    if (post && post.id) {
+      bodyRef.current = post.body || ""; 
+      setFile(post.file || null);
+      console.log('post.body:', post.body);
+  
+      // Cập nhật nội dung trong editor
+      if (editorRef.current) {
+        editorRef.current.setContentHTML(post.body || "<p></p>"); // Thiết lập nội dung mặc định
+      }
+    }
+  }, [post]);
 
   const onPick = async (isImage)=>{
 
@@ -154,7 +157,12 @@ const NewPost = () => {
           </View>
 
           <View style={styles.textEditor}>
-            <RichTextEditor editorRef={editorRef} onChange={body=> bodyRef.current = body} />
+            <RichTextEditor 
+              editorRef={editorRef} 
+              initialContentHTML={post?.body || ''}
+              // onChange={body=> bodyRef.current = body} 
+              onChange={(body) => (bodyRef.current = body)}
+            />
           </View>
 
           {

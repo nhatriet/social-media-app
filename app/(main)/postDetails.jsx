@@ -14,7 +14,7 @@ import CommentItem from '../../components/CommentItem';
 import { supabase } from '../../lib/supabase';
 import { getUserData } from '../../services/userService';
 import { createNotification } from '../../services/notificationService';
-// import Header from '../../components/Header';
+import BackButton from '../../components/BackButton';
 
 const PostDetails = () => {
     const {postId, commentId} = useLocalSearchParams();
@@ -144,8 +144,8 @@ const PostDetails = () => {
     
   return (
     <ScreenWrapper bg="white">
+        <BackButton router={router} />
         <View style={styles.container}>
-            {/* <Header /> */}
             <ScrollView showVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
                 <PostCard
                     item = {{...post, comments: [{count: post?.comments?.length}]}}
@@ -190,7 +190,6 @@ const PostDetails = () => {
                                 item={comment}
                                 onDelete={onDeleteComment}
                                 highlight = {comment.id == commentId}
-                                //canDelete = {user?.id && (user.id === comment.userId || user.id === post.userId)}
                                 canDelete = {user.id == comment.userId || user.id == post.userId}
                             />
                         )

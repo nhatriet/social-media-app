@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { theme } from '../constants/theme'
 
@@ -7,8 +7,13 @@ import { theme } from '../constants/theme'
 //   editorRef,
 //   onChange
 // }) => {
-const RichTextEditor = ({ onChange }) => {
-  const editorRef = useRef();
+const RichTextEditor = ({ editorRef, initialContentHTML, onChange }) => {
+  // const editorRef = useRef();
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setContentHTML(initialContentHTML); 
+    }
+  }, [editorRef, initialContentHTML]);
   
   return (
     <View style={{minHeight: 285}}>
