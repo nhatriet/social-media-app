@@ -40,18 +40,31 @@ const NewPost = () => {
   //   }
   // },[post])
 
+  // useEffect(() => {
+  //   if (post && post.id) {
+  //     //bodyRef.current = post.body || ""; 
+  //     const cleanBody = post.body ? post.body.replace(/&nbsp;/g, ' ') : ""; // Thay &nbsp; thành khoảng trắng
+  //     bodyRef.current = cleanBody;
+  //     setFile(post.file || null);
+  //     console.log('post.body:', post.body);
+  
+  //     // Cập nhật nội dung trong editor
+  //     if (editorRef.current) {
+  //       editorRef.current.setContentHTML(post.body || "<p></p>"); // Thiết lập nội dung mặc định
+  //     }
+  //   }
+  // }, [post]);
   useEffect(() => {
     if (post && post.id) {
-      bodyRef.current = post.body || ""; 
+      const cleanBody = post.body ? post.body.replace(/&nbsp;/g, ' ') : "<p></p>"; 
+      bodyRef.current = cleanBody;
       setFile(post.file || null);
-      console.log('post.body:', post.body);
   
-      // Cập nhật nội dung trong editor
       if (editorRef.current) {
-        editorRef.current.setContentHTML(post.body || "<p></p>"); // Thiết lập nội dung mặc định
+        editorRef.current.setContentHTML(cleanBody); 
       }
     }
-  }, [post]);
+  }, [post, editorRef]);
 
   const onPick = async (isImage)=>{
 

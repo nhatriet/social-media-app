@@ -3,12 +3,7 @@ import React, { useEffect, useRef } from 'react'
 import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor'
 import { theme } from '../constants/theme'
 
-// const RichTextEditor = ({
-//   editorRef,
-//   onChange
-// }) => {
 const RichTextEditor = ({ editorRef, initialContentHTML, onChange }) => {
-  // const editorRef = useRef();
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.setContentHTML(initialContentHTML); 

@@ -35,8 +35,8 @@ const PostCard = ({
     hasShadow = true,
     showMoreIcon = true,
     showDelete = false,
-    onDelete=()=>{},
-    onEdit=()=>{}
+    onDelete = () => { },
+    onEdit = () => { }
 }) => {
     const shadowStyles = {
         shadowOffset: {
@@ -51,24 +51,24 @@ const PostCard = ({
     const [likes, setLikes] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(()=>{
+    useEffect(() => {
         //setLikes(item?.postLikes);
         setLikes(item?.postLikes || []);
-    },[item])
+    }, [item])
 
-    const openPostDetails = ()=>{
-        if(!showMoreIcon) return null;
-        router.push({pathname: 'postDetails', params: {postId: item?.id}})
+    const openPostDetails = () => {
+        if (!showMoreIcon) return null;
+        router.push({ pathname: 'postDetails', params: { postId: item?.id } })
     }
 
-    const onLike = async()=>{
-        if(liked){
+    const onLike = async () => {
+        if (liked) {
             // remove like
-            let updatedLikes = likes?.filter(like=> like.userId!=currentUser?.id);
+            let updatedLikes = likes?.filter(like => like.userId != currentUser?.id);
             setLikes([...updatedLikes])
             let res = await removePostLike(item?.id, currentUser?.id);
             console.log('remove like: ', res);
-            if(!res.success){
+            if (!res.success) {
                 Alert.alert('Post', "Something went wrong!");
             }
         } else {
@@ -80,15 +80,15 @@ const PostCard = ({
             setLikes([...likes, data])
             let res = await createPostLike(data);
             console.log('add like: ', res);
-            if(!res.success){
+            if (!res.success) {
                 Alert.alert('Post', "Something went wrong!");
             }
         }
     }
 
-    const onShare = async()=>{
-        let content = {message: stripHtmlTags(item?.body)};
-        if(item?.file){
+    const onShare = async () => {
+        let content = { message: stripHtmlTags(item?.body) };
+        if (item?.file) {
             // download file then share the local uri
             setLoading(true);
             let url = await downloadFile(getSupabaseFileUrl(item?.file).uri);
@@ -99,139 +99,137 @@ const PostCard = ({
         Share.share(content);
     }
 
-    const handlePostDelete = ()=>{
+    const handlePostDelete = () => {
         Alert.alert('Confirm', "Are you sure you want to delete this post?", [
             {
-              text: 'Cancel',
-              onPress: ()=> console.log('modal cancelled'),
-              style: 'cancel'
+                text: 'Cancel',
+                onPress: () => console.log('modal cancelled'),
+                style: 'cancel'
             },
             {
-              text: 'Delete',
-              onPress: ()=> onDelete(item),
-              style: 'destructive'
+                text: 'Delete',
+                onPress: () => onDelete(item),
+                style: 'destructive'
             }
         ])
     }
 
     const createAt = moment(item?.created_at).format('MMM D');
-    const liked = likes.filter(like=> like.userId==currentUser?.id)[0]? true: false;
-  return (
-    <View style={[styles.container, hasShadow && shadowStyles]}>
-      <View style={styles.header}>
+    const liked = likes.filter(like => like.userId == currentUser?.id)[0] ? true : false;
+    return (
+        <View style={[styles.container, hasShadow && shadowStyles]}>
+            <View style={styles.header}>
 
-        {/* user info & post time */}
-        <View style={styles.userInfo}>
-            <Avatar
-                size={hp(4.5)}
-                uri={item?.user?.image}
-                rounded={theme.radius.md}
-            />
-            <View style={{gap: 2}}>
-                <Text style={styles.username}>{item?.user?.name}</Text>
-                <Text style={styles.postTime}>{createAt}</Text>
+                {/* user info & post time */}
+                <View style={styles.userInfo}>
+                    <Avatar
+                        size={hp(4.5)}
+                        uri={item?.user?.image}
+                        rounded={theme.radius.md}
+                    />
+                    <View style={{ gap: 2 }}>
+                        <Text style={styles.username}>{item?.user?.name}</Text>
+                        <Text style={styles.postTime}>{createAt}</Text>
+                    </View>
+                </View>
+
+                {
+                    showMoreIcon && (
+                        <TouchableOpacity onPress={openPostDetails}>
+                            <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
+                        </TouchableOpacity>
+                    )
+                }
+
+                {
+                    showDelete && currentUser.id == item?.userId && (
+                        <View style={styles.actions}>
+                            <TouchableOpacity onPress={() => onEdit(item)}>
+                                <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handlePostDelete}>
+                                <Icon name="delete" size={hp(2.5)} color={theme.colors.rose} />
+                            </TouchableOpacity>
+                        </View>
+                    )
+                }
+
+            </View>
+
+            {/* post body & media */}
+            <View style={styles.content}>
+                <View style={styles.postBody}>
+                    {
+                        item?.body && (
+                            <RenderHtml
+                                contentWidth={wp(100)}
+                                source={{ html: item?.body }}
+                                tagsStyles={tagsStyles}
+                            />
+                        )
+                    }
+                </View>
+
+                {/* post img */}
+                {
+                    item?.file && item?.file?.includes('postImages') && (
+                        <Image
+                            source={getSupabaseFileUrl(item?.file)}
+                            transition={100}
+                            style={styles.postMedia}
+                            contentFit='cover'
+                        />
+                    )
+                }
+
+                {/* post vid */}
+                {
+                    item?.file && item?.file?.includes('postVideos') && (
+                        <Video
+                            style={[styles.postMedia, { height: hp(30) }]}
+                            source={getSupabaseFileUrl(item?.file)}
+                            useNativeControls
+                            resizeMode='cover'
+                            isLooping
+                        />
+                    )
+                }
+            </View>
+
+            {/* like, comment & share */}
+            <View style={styles.footer}>
+                <View style={styles.footerButton}>
+                    <TouchableOpacity onPress={onLike}>
+                        <Icon name="heart" size={24} fill={liked ? theme.colors.rose : 'transparent'} color={liked ? theme.colors.rose : theme.colors.textLight} />
+                    </TouchableOpacity>
+                    <Text style={styles.count}>
+                        {likes && likes.length > 0 ? likes.length : '0'} 
+                    </Text>
+                </View>
+                <View style={styles.footerButton}>
+                    <TouchableOpacity onPress={openPostDetails}>
+                        <Icon name="comment" size={24} color={theme.colors.textLight} />
+                    </TouchableOpacity>
+                    <Text style={styles.count}>
+                        {
+                            item?.comments[0]?.count
+                        }
+                    </Text>
+                </View>
+                <View style={styles.footerButton}>
+                    {
+                        loading ? (
+                            <Loading size="small" />
+                        ) : (
+                            <TouchableOpacity onPress={onShare}>
+                                <Icon name="share" size={24} color={theme.colors.textLight} />
+                            </TouchableOpacity>
+                        )
+                    }
+                </View>
             </View>
         </View>
-
-        {
-            showMoreIcon && (
-                <TouchableOpacity onPress={openPostDetails}>
-                    <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
-                </TouchableOpacity>
-            )
-        }
-
-        {
-            showDelete && currentUser.id == item?.userId && (
-                <View style={styles.actions}>
-                    <TouchableOpacity onPress={()=> onEdit(item)}>
-                        <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handlePostDelete}>
-                        <Icon name="delete" size={hp(2.5)} color={theme.colors.rose} />
-                    </TouchableOpacity>
-                </View>
-            )
-        }
-        
-        </View>
-
-      {/* post body & media */}
-      <View style={styles.content}>
-        <View style={styles.postBody}>
-            {
-                item?.body && (
-                    <RenderHtml
-                        contentWidth={wp(100)}
-                        source={{html: item?.body}}
-                        tagsStyles={tagsStyles}
-                    />
-                )
-            }
-        </View>
-
-        {/* post img */}
-        {
-            item?.file && item?.file?.includes('postImages') && (
-                <Image
-                    source={getSupabaseFileUrl(item?.file)}
-                    transition={100}
-                    style={styles.postMedia}
-                    contentFit='cover'
-                />
-            )
-        }
-
-        {/* post vid */}
-        {
-            item?.file && item?.file?.includes('postVideos') && (
-                <Video
-                    style={[styles.postMedia, {height: hp(30)}]}
-                    source={getSupabaseFileUrl(item?.file)}
-                    useNativeControls
-                    resizeMode='cover'
-                    isLooping
-                />
-            )
-        }
-      </View>
-
-      {/* like, comment & share */}
-      <View style={styles.footer}>
-        <View style={styles.footerButton}>
-            <TouchableOpacity onPress={onLike}>
-                <Icon name="heart" size={24} fill={liked? theme.colors.rose: 'transparent'} color={liked? theme.colors.rose: theme.colors.textLight} />
-            </TouchableOpacity>
-            <Text style={styles.count}>
-                {
-                    likes?.length
-                }
-            </Text>
-        </View>
-        <View style={styles.footerButton}>
-            <TouchableOpacity onPress={openPostDetails}>
-                <Icon name="comment" size={24} color={theme.colors.textLight} />
-            </TouchableOpacity>
-            <Text style={styles.count}>
-                {
-                    item?.comments[0]?.count
-                }
-            </Text>
-        </View>
-        <View style={styles.footerButton}>
-            {
-                loading? (
-                    <Loading size="small" />
-                ):(
-                    <TouchableOpacity onPress={onShare}>
-                        <Icon name="share" size={24} color={theme.colors.textLight} />
-                    </TouchableOpacity>
-                )
-            }
-        </View>
-      </View>
-    </View>
-  )
+    )
 }
 
 export default PostCard
@@ -240,7 +238,7 @@ const styles = StyleSheet.create({
     container: {
         gap: 10,
         marginBottom: 15,
-        borderRadius: theme.radius.xxl*1.1,
+        borderRadius: theme.radius.xxl * 1.1,
         borderCurve: 'continuous',
         padding: 10,
         paddingVertical: 12,
